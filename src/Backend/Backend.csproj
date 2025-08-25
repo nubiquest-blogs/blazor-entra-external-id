@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\App.ServiceDefaults\App.ServiceDefaults.csproj" />
       <ProjectReference Include="..\AppContracts\AppContracts.csproj" />
     </ItemGroup>
 
