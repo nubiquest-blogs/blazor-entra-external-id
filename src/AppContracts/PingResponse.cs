@@ -2,7 +2,13 @@
 
 public class PingResponse
 {
-    public List<(string, string)> Claims { get; set; } = [];
+    public List<PingClaim> Claims { get; set; } = [];
     
     public required string Username { get; set; }
+}
+
+public class PingClaim
+{
+    public required string Type { get; set; } = string.Empty;
+    public required string Value { get; set; } = string.Empty;
 }

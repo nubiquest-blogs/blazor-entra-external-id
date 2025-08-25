@@ -1,0 +1,94 @@
+﻿@page "/calls"
+@using AppContracts
+@using ExternalIdApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Identity.Web
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+@inject ClientService Client
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Calls</h1>
+<hr/>
+<h2>Client Claims</h2>
+
+
+
+<p>Hello - @_user</p>
+<ul>
+    @foreach (var claim in _claims)
+    {
+        <li>@claim.Item1 : @claim.Item2</li>
+    }
+</ul>
+<hr/>
+<h2>Call APIs</h2>
+<button class="btn btn-primary" @onclick="Call">Call</button>
+
+@if (_response != null)
+{
+    <p>Status code: @_response.StatusCode</p>
+    @if (_ping != null)
+    {
+        <ul>
+            @foreach (var claim in _ping.Claims)
+            {
+                <li>@claim.Type : @claim.Value</li>
+            }
+        </ul>
+    }
+}
+
+@if (_error != null)
+{
+    <p>@_error.Message</p>
+    <p>@_error.StackTrace</p>
+}
+
+@code {
+    private Exception? _error;
+    private HttpResponseMessage? _response;
+    private string _content = string.Empty;
+    private List<(string, string)> _claims = [];
+    private string _user = string.Empty;
+    private PingResponse? _ping;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _user = state.User.Identity?.Name ?? "Unknown";
+        _claims = state.User.Claims.Select(c => (c.Type, c.Value)).ToList();
+    }
+
+    private async Task Call()
+    {
+        _error = null;
+        _response = null;
+        try
+        {
+            _response = await Client.GetResponse();
+            _content = await _response.Content.ReadAsStringAsync();
+            if (_response.IsSuccessStatusCode)
+            {
+                _ping = await _response.Content.ReadFromJsonAsync<PingResponse>();
+            }
+        }
+        catch (MicrosoftIdentityWebChallengeUserException ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+        catch (Exception ex)
+        {
+            _error = ex;
+        }
+    }
+
+}
