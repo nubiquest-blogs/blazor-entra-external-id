@@ -4,7 +4,9 @@ public class PingResponse
 {
     public List<PingClaim> Claims { get; set; } = [];
     
-    public required string Username { get; set; }
+    public required string Description { get; set; }
+    
+    public required string Username { get; set; } 
 }
 
 public class PingClaim

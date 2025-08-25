@@ -18,6 +18,7 @@ public class PingController : ControllerBase
                 Type = c.Type,
                 Value = c.Value
             }).ToList(),
+            Description = "Authorized endpoint",
             Username = User.Identity?.Name ?? "unknown",
         };
         return Ok(toReturn);

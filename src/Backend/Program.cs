@@ -14,6 +14,13 @@ builder.Services
         .AuthenticationScheme) // This means default scheme is "OpenIdConnect"
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), OpenIdConnectDefaults.AuthenticationScheme);
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("RequireAdmin", policy =>
+    {
+        policy.RequireRole("role");
+        //policy.AddAuthenticationSchemes(OpenIdConnectDefaults.AuthenticationScheme);
+    });
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
