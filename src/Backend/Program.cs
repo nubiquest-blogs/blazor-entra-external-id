@@ -17,7 +17,12 @@ builder.Services
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("RequireAdmin", policy =>
     {
-        policy.RequireRole("role");
+        policy.RequireRole("admin");
+        //policy.AddAuthenticationSchemes(OpenIdConnectDefaults.AuthenticationScheme);
+    })
+    .AddPolicy("RequirePublic", policy =>
+    {
+        policy.RequireRole("appaccess");
         //policy.AddAuthenticationSchemes(OpenIdConnectDefaults.AuthenticationScheme);
     });
 

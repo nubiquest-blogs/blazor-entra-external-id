@@ -34,6 +34,15 @@ public class Program
                 options.Scopes = "api://a081ad7b-e67b-41cf-9bbf-991af8a7d0ed/.default" ;
                 
             });
+        
+        builder.Services
+            .AddHttpClient<ClientPublicService>(client => client.BaseAddress = new Uri("https://backend"))
+            .AddMicrosoftIdentityAppAuthenticationHandler("auth-public", options =>
+            {
+                options.Scopes = "api://a081ad7b-e67b-41cf-9bbf-991af8a7d0ed/.default" ;
+                //options.Scopes = "api://a081ad7b-e67b-41cf-9bbf-991af8a7d0ed/Data:Read";
+
+            });
 
         builder.Services.AddCascadingAuthenticationState();
 

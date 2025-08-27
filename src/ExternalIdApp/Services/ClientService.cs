@@ -2,8 +2,9 @@ namespace ExternalIdApp.Services;
 
 public class ClientService(HttpClient client)
 {
-    public Task<HttpResponseMessage> GetResponse()
+    public Task<HttpResponseMessage> Call(string address)
     {
-        return client.GetAsync("/ping");
+        return client.GetAsync(address);
     }
+   
 }

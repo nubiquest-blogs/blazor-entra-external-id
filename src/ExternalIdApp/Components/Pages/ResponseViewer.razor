@@ -1,0 +1,25 @@
+@using AppContracts
+
+<p>Status code: @Response.StatusCode</p>
+
+
+
+
+@code {
+    private string _content = string.Empty;
+    private PingResponse? _ping;
+
+    [Parameter] public HttpResponseMessage Response { get; set; } = null!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _ping = null;
+        _content = await Response.Content.ReadAsStringAsync();
+        if (Response.IsSuccessStatusCode)
+        {
+            _ping = await Response.Content.ReadFromJsonAsync<PingResponse>();
+        }
+    }
+
+}

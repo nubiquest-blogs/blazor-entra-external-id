@@ -10,7 +10,8 @@
 
 @attribute [Authorize]
 
-@inject ClientService Client
+@inject ClientService ClientService
+@inject ClientPublicService ClientPublicService
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -30,22 +31,46 @@
     }
 </ul>
 <hr/>
-<h2>Call APIs</h2>
-<button class="btn btn-primary" @onclick="Call">Call</button>
+<div class="row">
+    <div class="col-4">
+        <div>
+            <button class="btn btn-primary" @onclick="CallPingUserContext">Call /ping with user context</button>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="CallPingAppContext">Call /ping with app context</button>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="CallPingAdminUserContext">Call /ping/admin with user context
+            </button>
 
-@if (_response != null)
-{
-    <p>Status code: @_response.StatusCode</p>
-    @if (_ping != null)
-    {
-        <ul>
-            @foreach (var claim in _ping.Claims)
-            {
-                <li>@claim.Type : @claim.Value</li>
-            }
-        </ul>
-    }
-}
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="CallPingAdminAppContext">Call /ping/admin with app context
+            </button>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="CallPingPublicUserContext">Call /ping/public with user context
+            </button>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="CallPingPublicAppContext">Cal /ping/public with app context
+            </button>
+        </div>
+    </div>
+    <div class="col-8">
+        <h3>@_title</h3>
+        @if (_ping != null)
+        {
+            <p>EP Description: @_ping.Description</p>
+            <ul>
+                @foreach (var claim in _ping.Claims)
+                {
+                    <li>@claim.Type : @claim.Value</li>
+                }
+            </ul>
+        }
+    </div>
+</div>
 
 @if (_error != null)
 {
@@ -56,9 +81,9 @@
 @code {
     private Exception? _error;
     private HttpResponseMessage? _response;
-    private string _content = string.Empty;
     private List<(string, string)> _claims = [];
     private string _user = string.Empty;
+    private string _title = string.Empty;
     private PingResponse? _ping;
 
     protected override async Task OnInitializedAsync()
@@ -68,14 +93,34 @@
         _claims = state.User.Claims.Select(c => (c.Type, c.Value)).ToList();
     }
 
-    private async Task Call()
+    private Task CallPingUserContext() => Call(ClientService, "/ping");
+
+
+    private Task CallPingAppContext() => Call(ClientPublicService, "/ping");
+
+
+    private Task CallPingAdminUserContext() => Call(ClientService, "/ping/admin");
+
+
+    private Task CallPingAdminAppContext() => Call(ClientPublicService, "/ping/admin");
+
+
+    private Task CallPingPublicUserContext() => Call(ClientService, "/ping/public");
+ 
+
+    private Task CallPingPublicAppContext()=> Call(ClientPublicService, "/ping/public");
+  
+
+    private async Task<HttpResponseMessage?> Call(ClientService client, string address)
     {
         _error = null;
         _response = null;
+        _ping = null;
         try
         {
-            _response = await Client.GetResponse();
-            _content = await _response.Content.ReadAsStringAsync();
+            _response = await client.Call(address);
+            var context = client == ClientService ? "User" : "App";
+            _title = $"Call /ping with {context} context - Address {address} - Status {_response.StatusCode}";
             if (_response.IsSuccessStatusCode)
             {
                 _ping = await _response.Content.ReadFromJsonAsync<PingResponse>();
@@ -89,6 +134,12 @@
         {
             _error = ex;
         }
+        finally
+        {
+            StateHasChanged();
+        }
+
+        return null;
     }
 
 }
